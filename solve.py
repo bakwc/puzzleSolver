@@ -1,15 +1,20 @@
 #!/usr/bin/env python2.7
 
+import os
 import numpy as np
 import cv2
+import shutil
 
-img = cv2.imread('input.jpeg')
+OUT_DIR = 'data'
+INPUT_IMG = 'input.jpeg'
+
+img = cv2.imread(INPUT_IMG)
+origImg = np.copy(img)
 
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 edges = cv2.Canny(gray, 50, 150, apertureSize=3)
 h, w = edges.shape
-print edges.shape
 
 for i in xrange(0,h-1):
     for j in xrange(0,w-1):
@@ -41,18 +46,42 @@ print 'total:', len(contours)
 
 mask = np.zeros((h, w), np.uint8)
 
+shutil.rmtree(OUT_DIR, ignore_errors=True)
+os.makedirs(OUT_DIR)
+
+n = 0
 for cnt in contours:
     area = cv2.contourArea(cnt)
     if area < 1000:
         continue
+
     #print cnt
     #cv2.drawContours(img, [cnt], 0, (255, 0, 0), 1)
 
     hull = cv2.convexHull(cnt)
+    print 'size:', len(cnt), len(hull)
+
     cv2.drawContours(img, [hull], 0, (255, 0, 0), 3)
     cv2.drawContours(mask, [hull], 0, 255, -1)
 
-    print 'size:', len(cnt), len(hull)
+    currMask = np.zeros((h, w), np.uint8)
+    cv2.drawContours(currMask, [hull], 0, 255, -1)
+
+    cx, cy, cw, ch = cv2.boundingRect(hull)
+    currImg = np.zeros((ch, cw, 4), np.uint8)
+    for i in xrange(ch):
+        for j in xrange(cw):
+            oi = cy + i
+            oj = cx + j
+            if currMask[oi, oj] == 255:
+                currImg[i, j] = tuple(origImg[oi, oj]) + (255,)
+
+    cv2.imwrite(OUT_DIR + '/out_%d.png' % n, currImg, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+
+    #cv2.imshow('curr', currImg)
+    #cv2.waitKey(0)
+
+    #cv2.rectangle(img, (cx, cy), (cx + cw, cy + ch), (0, 255, 0), 2)
 
     # if area < 2000 or area > 4000:
     #     continue
@@ -67,6 +96,7 @@ for cnt in contours:
     # approx = cv2.approxPolyDP(cnt, epsilon, True)
     # print ' === approx:'
     # print approx
+    n += 1
 
 for i in xrange(0,h):
     for j in xrange(0,w):
