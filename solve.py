@@ -39,6 +39,8 @@ print 'total:', len(contours)
 
 #cv2.drawContours(img, contours, -1, (0,255,0), 3)
 
+mask = np.zeros((h, w), np.uint8)
+
 for cnt in contours:
     area = cv2.contourArea(cnt)
     if area < 1000:
@@ -48,6 +50,7 @@ for cnt in contours:
 
     hull = cv2.convexHull(cnt)
     cv2.drawContours(img, [hull], 0, (255, 0, 0), 3)
+    cv2.drawContours(mask, [hull], 0, 255, -1)
 
     print 'size:', len(cnt), len(hull)
 
@@ -64,6 +67,11 @@ for cnt in contours:
     # approx = cv2.approxPolyDP(cnt, epsilon, True)
     # print ' === approx:'
     # print approx
+
+for i in xrange(0,h):
+    for j in xrange(0,w):
+        if mask[i,j] != 255:
+            img[i,j] = (255, 255, 255)
 
 cv2.imshow('edges', img)
 
