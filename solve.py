@@ -4,6 +4,7 @@ import os
 import numpy as np
 import cv2
 import shutil
+import pickle
 
 OUT_DIR = 'data'
 INPUT_IMG = 'input.jpeg'
@@ -76,7 +77,16 @@ for cnt in contours:
             if currMask[oi, oj] == 255:
                 currImg[i, j] = tuple(origImg[oi, oj]) + (255,)
 
+    points = []
+    for point in hull:
+        ccx, ccy = tuple(point[0])
+        ccx -= cx
+        ccy -= cy
+        points.append((ccx, ccy))
+
     cv2.imwrite(OUT_DIR + '/out_%d.png' % n, currImg, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+    with open(OUT_DIR + '/out_%d.bin' % n, 'wb') as f:
+        f.write(pickle.dumps(points))
 
     #cv2.imshow('curr', currImg)
     #cv2.waitKey(0)
