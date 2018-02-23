@@ -35,7 +35,7 @@ for i in xrange(0,h-1):
 #edges = cv2.cvtColor(edges, cv2.COLOR_GRAY2RGB)
 _, contours, _ = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-print ' === total:', len(contours)
+print 'total:', len(contours)
 
 #cv2.drawContours(img, contours, -1, (0,255,0), 3)
 
@@ -43,9 +43,14 @@ for cnt in contours:
     area = cv2.contourArea(cnt)
     if area < 1000:
         continue
-    print ' === cnt:'
-    print cnt
-    cv2.drawContours(img, [cnt], 0, (255, 0, 0), 3)
+    #print cnt
+    #cv2.drawContours(img, [cnt], 0, (255, 0, 0), 1)
+
+    hull = cv2.convexHull(cnt)
+    cv2.drawContours(img, [hull], 0, (255, 0, 0), 3)
+
+    print 'size:', len(cnt), len(hull)
+
     # if area < 2000 or area > 4000:
     #     continue
 
